@@ -1,0 +1,8 @@
+XTerm*Background: black
+XTerm*Foreground: white
+XTerm*font: 9x15
+XTerm*saveLines: 1000
+XTerm*locale: true
+xterm*faceName: DejaVu Sans Mono:antialias=true
+xterm*faceSize: 14
+
