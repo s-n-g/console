@@ -1,0 +1,3 @@
+[submodule "termite/arcolinux-termite-themes"]
+	path = termite/arcolinux-termite-themes
+	url = https://github.com/arcolinux/arcolinux-termite-themes.git
