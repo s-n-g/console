@@ -1,0 +1,91 @@
+#!/bin/bash
+FEH_OPTIONS='-q -F --version-sort --auto-zoom'
+
+#############################################################################
+#                                 functions
+#############################################################################
+
+function show_help {
+echo -n $(basename "$0")
+cat <<END
+ version 1.0.0
+(C) S. Georgaras <sng at hellug dot gr>, 2018
+
+Usage: view-image-with-feh [OPTIONS] [FILE|DIR]
+
+Availabel options:
+  feh options
+    -r show images recursively
+
+    -d print image name on left top corner
+
+    -D NUMBER
+       slide show delay in seconds
+
+    -Y hide mouse pointer
+
+  own options
+  -s | --slide-show
+      sets -r -d -Y -D 3
+
+  -h print this screen and exit
+
+END
+}
+
+
+##############################################################################
+#                              Script starts here
+##############################################################################
+if [ -e ~/.config/view-image-with-feh/config ];then
+    . ~/.config/view-image-with-feh/config || exit 1
+fi
+
+#set -x
+while [ ! -z "$1" ];do
+    case "$1" in
+        # our options
+        -s|--slide-show)
+            SLIDE=yes
+            OPTIONS="${OPTIONS} -Y -D 3  -d -r"
+            shift
+            ;;
+        # feh options
+        -r|-Y)
+            OPTIONS="${OPTIONS} $1"
+            shift
+            ;;
+        -d)
+            OPTIONS="${OPTIONS} $1 --draw-tinted"
+            shift
+            ;;
+        -D)
+            shift
+            OPTIONS="${OPTIONS} -D $1"
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit
+            ;;
+        *)
+            if [ -d "$1" ]; then
+                DIR="$1"
+                if [ "$DIR" = "." ];then DIR="$PWD";fi
+                shift
+            elif [ -e "$1" ];then
+                FILE=$(basename "$1")
+                              DIR=$(dirname "$1")
+                shift
+            else
+                shift
+            fi
+    esac
+done
+cd "${DIR}"
+[ -z "$SLIDE" ] || unset FILE
+if [ -z "$FILE" ];then
+    feh ${FEH_OPTIONS} ${OPTIONS} . 2>/dev/null
+else
+    feh ${FEH_OPTIONS} ${OPTIONS} --start-at "${FILE}" * 2>/dev/null
+fi
