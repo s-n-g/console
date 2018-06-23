@@ -1,5 +1,6 @@
 #!/bin/bash
 FEH_OPTIONS='-q -F --version-sort --auto-zoom'
+SLIDE_SHOW_INTERVAL=3
 
 #############################################################################
 #                                 functions
@@ -15,24 +16,29 @@ Usage: view-image-with-feh [OPTIONS] [FILE|DIR]
 
 Availabel options:
   feh options
-    -r show images recursively
-
-    -d print image name on left top corner
-
-    -D NUMBER
-       slide show delay in seconds
-
-    -Y hide mouse pointer
-
+    -r  show images recursively
+    -d  print image name on left top corner
+    -D  NUMBER
+        slide show delay in seconds
+    -Y  hide mouse pointer
   own options
-  -s | --slide-show
-      sets -r -d -Y -D 3
+    -s | --slide-show
+        start a slide show (sets -r -d -Y -D 3)
+    -h print this screen and exit
 
-  -h print this screen and exit
-
+Config file: ~/.config/view-image-with-feh/config
+Available options:
+  FEH_OPTIONS         : static options to pass to feh
+  SLIDE_SHOW_INTERVAL : image transition timeout for slide shows
+Default values:
 END
+print_default_options
 }
 
+function print_default_options {
+    ME=$(type "$0" | sed 's/.* //')
+    sed -n '2,/^$/p' "${ME}" | sed 's/^/  /'
+}
 
 ##############################################################################
 #                              Script starts here
@@ -47,7 +53,7 @@ while [ ! -z "$1" ];do
         # our options
         -s|--slide-show)
             SLIDE=yes
-            OPTIONS="${OPTIONS} -Y -D 3  -d -r"
+            OPTIONS="${OPTIONS} -Y -D ${SLIDE_SHOW_INTERVAL}  -d -r"
             shift
             ;;
         # feh options
@@ -66,6 +72,10 @@ while [ ! -z "$1" ];do
             ;;
         -h|--help)
             show_help
+            exit
+            ;;
+        --show-default-options)
+            print_default_options
             exit
             ;;
         *)
