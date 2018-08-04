@@ -1,0 +1,63 @@
+#!/bin/bash
+#After executing the script you can change the delay, by assigning
+#actions to key-strokes
+#Example:
+#bindsym $mod+equal exec --no-startup-id ~/.config/i3/scripts/fehslide up
+#bindsym $mod+minus exec --no-startup-id ~/.config/i3/scripts/fehslide down
+
+MIN_DELAY=1.0
+DEF_DELAY=1.7
+[ -e ~/.config/fehslide/config ] && . ~/.config/fehslide
+if [ ! -e /tmp/.fehslide ];then
+    echo "DELAY=$DEF_DELAY" > /tmp/.fehslide
+fi
+
+function fileshow(){
+    echo "$1"
+    cd $(dirname "$1")
+    feh -F -x -Z --start-at ./$(basename "$1") . &
+    MYPID=$!
+    slide 
+}
+
+function dirshow(){
+    echo "$1"
+    feh -F -x -Z "$1" &
+    MYPID=$!
+    slide
+}
+
+function slide(){
+    while $(kill -0 $MYPID 2>/dev/null);do
+        . /tmp/.fehslide
+        sleep $DELAY
+        kill -s SIGUSR1 $MYPID 2>/dev/null
+    done
+}
+
+while [ ! -z "$1" ];do
+    if [ -d "$1" ];then
+        dirshow "$1"
+        shift
+    elif [ -f "$1" ];then
+        fileshow "$1"
+        shift
+    elif [ "$1" = "up" ];then
+        . /tmp/.fehslide
+        DELAY=$(echo "scale=2; $DELAY + 0.5" | bc)
+        echo "DELAY=$DELAY" > /tmp/.fehslide
+        shift
+        exit
+    elif [ "$1" = "down" ];then
+        . /tmp/.fehslide
+        DELAY=$(echo "scale=2
+            x = $DELAY - 0.5
+            if (x < $MIN_DELAY ) x = $DEF_DELAY
+            print x
+            " | bc -l)
+        echo "DELAY=$DELAY" > /tmp/.fehslide
+        shift
+        exit
+    fi
+done
+echo "DELAY=1.7" > /tmp/.fehslide
