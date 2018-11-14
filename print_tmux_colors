@@ -1,0 +1,13 @@
+#!/bin/bash
+line="   "
+read r c < <(stty size)
+for n in $(seq 15 -5 5);do
+    if [[ $((n*10)) -lt $c ]];then break;fi
+done
+for i in {0..255}; do
+    printf "${line:${#i}}\x1b[38;5;${i}mcolour${i}\x1b[0m  "
+    if [[ $((i%n)) -eq 0 ]];then
+        echo 
+    fi
+done
+echo
