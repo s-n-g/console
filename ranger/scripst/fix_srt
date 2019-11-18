@@ -1,0 +1,18 @@
+#!/bin/bash
+# renames srt files
+# Example:
+#   XXXX_en.srt
+# becomes
+#   XXXX.en.srt
+#
+# Works with _en and _el
+#
+# $1: current directory
+find "$1" -iname "*_e[nl].srt" > /tmp/fix_srt.$$
+sed -e "s/^/mv '/" -e "s/$/'/" /tmp/fix_srt.$$ > /tmp/fix_srt_a.$$
+sed -e "s/^/ '/" -e "s/$/'/" -e 's/_\(e[nl].srt\)/.\1/' /tmp/fix_srt.$$ > /tmp/fix_srt_b.$$
+paste /tmp/fix_srt_a.$$ /tmp/fix_srt_b.$$ > /tmp/fix_srt_c.$$
+. /tmp/fix_srt_c.$$
+rm /tmp/*.$$
+
+
