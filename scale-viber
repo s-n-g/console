@@ -1,0 +1,112 @@
+#!/bin/bash
+# Last modified: 12/02/2021 19:46:36 +0200
+function print_help(){
+    echo "Utility to scale Viber under Linux
+
+Usage: $(basename "$0") [OPTIONS] [Scale Factor]
+
+Options are:
+    -d  DESK
+        Location of Viber's Desktop file
+        Default: /usr/share/applications/viber.desktop
+    -p  PATH
+        Path of Viber's executable
+        Default: /opt/viber/Viber
+    -h  Print this help and exit
+
+[Scale Factor] is 0.1 - 2.0 (zoom factor)
+If [Scale Factor] is not specified, 1.2 is used
+"
+}
+
+SCALE="1.2"
+while [ ! -z "$1" ];do
+    case "$1" in
+        -h)
+            print_help
+            exit
+            ;;
+        -d)
+            shift
+            DESK="$1"
+            shift
+            ;;
+        -p)
+            shift
+            VIBER_COMMAND="$1"
+            shift
+            ;;
+        *)
+            SCALE="$1"
+            shift
+            ;;
+    esac
+done
+
+if [ $(id -u) != "0" ];then
+    print_help
+    echo "ERROR: You must be root to execute this script"
+    echo
+    exit  1
+fi
+
+
+echo -ne "Looking for Viber desktop file ... "
+if [ -z "$DESK" ];then
+    if [ -e /usr/share/applications/viber.desktop ];then
+        DESK=/usr/share/applications/viber.desktop
+    else
+        echo "not found"
+        echo
+        print_help
+        echo "Please use -d parameter to specify it..."
+        exit 1
+    fi
+else
+    if [ ! -e "$DESK" ];then
+        echo "not found"
+        echo
+        echo "Please check the value of parameter -p"
+        echo
+        exit 1
+    fi
+fi
+echo found
+
+
+echo -ne "Looking for Viber executable ... "
+if [ -z "$VIBER_COMMAND" ];then
+    if [ -e /opt/viber/Viber ];then
+        VIBER_COMMAND=/opt/viber/Viber
+    fi
+else
+    if [ ! -e "$DESK" ];then
+        echo "not found"
+        echo
+        echo "Please check the value of parameter -d"
+        echo
+        exit 1
+    fi
+fi
+echo found
+
+if [ -z "$VIBER_COMMAND" ];then
+    V1=$(which Viber)
+    V2=$(which viber)
+    if [ ! -z "$V1" ]; then VIBER_COMMAND="$V1";fi
+    if [ ! -z "$V2" ]; then VIBER_COMMAND="$V2";fi
+    if [ -z "$VIBER_COMMAND" ];then
+        echo "not found"
+        echo
+        print_help
+        echo "Please use -p parameter to specify it..."
+        exit 1
+    else
+        echo found
+    fi
+fi
+
+echo -ne "Alterning Desktop file ... "
+sed "$DESK" -i -e '/Exec=/d'
+echo "Exec=bash -c \"QT_SCALE_FACTOR=${SCALE} ${VIBER_COMMAND}\" %u" >> "$DESK"
+echo "done"
